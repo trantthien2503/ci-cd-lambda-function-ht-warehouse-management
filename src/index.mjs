@@ -22,7 +22,6 @@ const tableGlobal = "__hoangthien-warehouse-management";
 export const handler = async function (event, context, callback) {
   const path = event.path;
   const method = event.httpMethod;
-  console.log("From github action");
   const response = {
     statusCode: 200,
     headers: {
