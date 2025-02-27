@@ -32,151 +32,33 @@ export const handler = async function (event, context, callback) {
   };
 
   try {
-    switch (path) {
-      case "/connection":
-        response.body = JSON.stringify({
-          data: true,
-          message: "Connection successful",
-        });
-        callback(null, response);
-        break;
-      // Router categories
-      case "/categories":
-        await handleCategories(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      case "/categories/add-multiple":
-        await handleAddMultipleCategories(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      case "/units":
-        await handleUnits(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
+    const handlers = {
+      "/categories": handleCategories,
+      "/categories/add-multiple": handleAddMultipleCategories,
+      "/units": handleUnits,
+      "/stocks": handleStocks,
+      "/products": handleProducts,
+      "/products/add-multiple": handleAddMultipleProducts,
+      "/products/get-paginations": handleGetProductsPaginations,
+      "/warehouse-location": handleWarehouseLocation,
+      "/suppliers": handleSupplier,
+      "/suppliers/add-multiple": handleAddMultipleSuppliers,
+      "/bills": handleBills,
+      "/bills/suppliers": handleBillSuppliers,
+    };
 
-      case "/stocks":
-        await handleStocks(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      // Router products
-      case "/products":
-        await handleProducts(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      case "/products/add-multiple":
-        await handleAddMultipleProducts(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      case "/products/get-paginations":
-        await handleGetProductsPaginations(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      // Router warehouse-location
-      case "/warehouse-location":
-        await handleWarehouseLocation(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      // Router suppliers
-      case "/suppliers":
-        await handleSupplier(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      case "/suppliers/add-multiple":
-        await handleAddMultipleSuppliers(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      // Router employees
-      case "/employees":
-        if (method === "GET") {
-          response.body = JSON.stringify({ message: "employees GET" });
-        } else if (method === "POST") {
-          response.body = JSON.stringify({ message: "employees POST" });
-        }
-        break;
-      // Router bills
-      case "/bills":
-        await handleBills(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      case "/bills/suppliers":
-        await handleBillSuppliers(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
-        break;
-      default:
-        response.statusCode = 404;
-        response.body = JSON.stringify({ message: "Not Found" });
+    if (handlers[path]) {
+      await handlers[path](
+        method,
+        event,
+        response,
+        docClient,
+        tableGlobal,
+        callback
+      );
+    } else {
+      response.statusCode = 404;
+      response.body = JSON.stringify({ message: "Not Found" });
     }
   } catch (error) {
     console.error("Error handling request:", error);
