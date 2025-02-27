@@ -165,14 +165,14 @@ export const handler = async function (event, context, callback) {
         );
         break;
       case "/bills/suppliers":
-        await handleBillSuppliers(
-          method,
-          event,
-          response,
-          docClient,
-          tableGlobal,
-          callback
-        );
+        // await handleBillSuppliers(
+        //   method,
+        //   event,
+        //   response,
+        //   docClient,
+        //   tableGlobal,
+        //   callback
+        // );
         break;
       default:
         response.statusCode = 404;
