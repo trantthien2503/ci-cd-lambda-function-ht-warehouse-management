@@ -65,10 +65,14 @@ export const handleUnits = async (
       }
 
       if (id_product && ratio && unit) {
-        let command = new QueryCommand({
+        let command = new ScanCommand({
           TableName: tableName,
-          KeyConditionExpression:
-            "ratio = :ratio AND unit = :unit AND id_product = :id_product",
+          FilterExpression:
+            "#ratio = :ratio AND #unit = :unit AND id_product = :id_product",
+          ExpressionAttributeNames: {
+            "#ratio": "ratio",
+            "#unit": "unit", // 🔹 Tránh xung đột với từ khóa dự trữ
+          },
           ExpressionAttributeValues: {
             ":ratio": ratio,
             ":unit": unit,
@@ -76,6 +80,7 @@ export const handleUnits = async (
           },
           ConsistentRead: true,
         });
+
         const dataQueryCommand = await docClient.send(command);
         if (dataQueryCommand.Items.length > 0) {
           response.statusCode = 400;
