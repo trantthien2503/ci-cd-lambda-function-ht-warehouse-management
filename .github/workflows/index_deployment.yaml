@@ -9,17 +9,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies (Node.js)
+        run: |
+          if [ -f package.json ]; then
+            npm install --only=prod
+          fi
+
+      - name: Install dependencies (Python)
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt -t .
+          fi
+
+      - name: Remove unnecessary files
+        run: |
+          rm -rf .git .github tests
+
       - name: Install zip tool
         uses: montudor/action-zip@v1
+
       - name: Create Zip file for Lambda function
         run: zip -r code.zip .
+
       - name: AWS CLI v2
         uses: imehedi/actions-awscli-v2@latest
         with:
           args: "lambda update-function-code \
             --function-name arn:aws:lambda:ap-southeast-1:222634404780:function:function-ht-warehouse-management \
             --zip-file fileb://code.zip"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "ap-southeast-1"
+
+      - name: Wait for deployment (10s)
+        run: sleep 10
+
+      - name: Check Lambda logs after deployment
+        run: |
+          aws logs describe-log-streams --log-group-name "/aws/lambda/function-ht-warehouse-management" --order-by "LastEventTime" --descending --limit 1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
