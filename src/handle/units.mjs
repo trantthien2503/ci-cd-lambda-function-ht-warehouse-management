@@ -65,7 +65,7 @@ export const handleUnits = async (
       }
 
       if (id_product && ratio && unit) {
-        command = new QueryCommand({
+        let command = new QueryCommand({
           TableName: tableName,
           FilterExpression:
             "ratio = :ratio AND unit = :unit AND id_product = :id_product",
