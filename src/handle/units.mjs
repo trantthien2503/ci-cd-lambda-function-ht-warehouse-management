@@ -55,13 +55,35 @@ export const handleUnits = async (
     try {
       // Parse the request body
       const requestBody = JSON.parse(event.body);
-      const { id } = requestBody;
+      const { id, id_product, ratio, unit } = requestBody;
 
       // Check if 'id' is missing in the request body
       if (!id) {
         response.statusCode = 400;
         response.body = JSON.stringify({ message: "Missing required fields" });
         return callback(null, response);
+      }
+
+      if (id_product && ratio && unit) {
+        command = new QueryCommand({
+          TableName: tableName,
+          FilterExpression:
+            "ratio = :ratio AND unit = :unit AND id_product = :id_product",
+          ExpressionAttributeValues: {
+            ":ratio": ratio,
+            ":unit": unit,
+            ":id_product": id_product,
+          },
+        });
+        const dataQueryCommand = await docClient.send(command);
+        if (dataQueryCommand.Items.length > 0) {
+          response.statusCode = 400;
+          response.body = JSON.stringify({
+            message: "Unit already exists",
+            status: false,
+          });
+          return;
+        }
       }
 
       // PutCommand to insert the item into DynamoDB
