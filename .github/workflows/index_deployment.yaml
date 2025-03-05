@@ -12,6 +12,24 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
+      # 🛑 Tải code từ AWS Lambda trước khi deploy
+      - name: Download existing Lambda code
+        run: |
+          aws lambda get-function --function-name function-ht-warehouse-management \
+          --query 'Code.Location' --output text > lambda_url.txt
+          curl -o lambda.zip "$(cat lambda_url.txt)"
+          unzip -o lambda.zip -d lambda_code
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "ap-southeast-1"
+
+      # 🛑 Kiểm tra sự khác biệt giữa code hiện tại và AWS
+      - name: Check for code differences
+        run: |
+          diff -r lambda_code . || echo "Differences found!"
+        continue-on-error: true
+
       - name: Install dependencies (Node.js)
         run: |
           if [ -f package.json ]; then
