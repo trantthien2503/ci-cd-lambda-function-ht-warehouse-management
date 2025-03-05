@@ -217,29 +217,39 @@ export const handleGetUnitsByIdProduct = async (
   event,
   response,
   docClient,
-  tableGlobal,
-  callback
+  tableGlobal
 ) => {
   const tableName = `units${tableGlobal}`;
 
   if (method === "GET") {
     try {
       let command;
-      const queryStringParameters = event.queryStringParameters || {}; // Lấy tham số truy vấn
+      const queryStringParameters = event.queryStringParameters || {};
 
       if (queryStringParameters.id_product) {
         const { id_product } = queryStringParameters;
 
-        // Nếu chỉ có một id_product, ta có thể tìm theo Partition Key bằng QueryCommand
-        command = new QueryCommand({
-          TableName: tableName,
-          KeyConditionExpression: "id_product = :id_product",
-          ExpressionAttributeValues: {
-            ":id_product": id_product,
-          },
-        });
+        // ⚡ Kiểm tra nếu `id_product` là Partition Key
+        const isPartitionKey = false; // Cập nhật giá trị này theo cấu trúc bảng thực tế
+
+        if (isPartitionKey) {
+          command = new QueryCommand({
+            TableName: tableName,
+            KeyConditionExpression: "id_product = :id_product",
+            ExpressionAttributeValues: {
+              ":id_product": id_product,
+            },
+          });
+        } else {
+          command = new ScanCommand({
+            TableName: tableName,
+            FilterExpression: "id_product = :id_product",
+            ExpressionAttributeValues: {
+              ":id_product": id_product,
+            },
+          });
+        }
       } else {
-        // Nếu không có `id_product`, có thể trả về toàn bộ bảng hoặc một lỗi
         response.statusCode = 400;
         response.body = JSON.stringify({
           message: "Missing id_product parameter",
