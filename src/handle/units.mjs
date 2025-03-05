@@ -210,3 +210,59 @@ export const handleUnits = async (
     });
   }
 };
+
+export const handleGetUnitsByIdProduct = async (
+  method,
+  event,
+  response,
+  docClient,
+  tableGlobal,
+  callback
+) => {
+  const tableName = `units${tableGlobal}`;
+
+  if (method === "GET") {
+    try {
+      let command;
+      const queryStringParameters = event.queryStringParameters || {}; // Lấy tham số truy vấn
+
+      if (queryStringParameters.id_product) {
+        const { id_product } = queryStringParameters;
+
+        // Nếu chỉ có một id_product, ta có thể tìm theo Partition Key bằng QueryCommand
+        command = new QueryCommand({
+          TableName: tableName,
+          KeyConditionExpression: "id_product = :id_product",
+          ExpressionAttributeValues: {
+            ":id_product": id_product,
+          },
+        });
+      } else {
+        // Nếu không có `id_product`, có thể trả về toàn bộ bảng hoặc một lỗi
+        response.statusCode = 400;
+        response.body = JSON.stringify({
+          message: "Missing id_product parameter",
+          status: false,
+        });
+        return;
+      }
+
+      const data = await docClient.send(command);
+      response.body = JSON.stringify(data.Items || []);
+    } catch (error) {
+      console.error("Error processing GET request:", error);
+      response.statusCode = 500;
+      response.body = JSON.stringify({
+        message: "Internal Server Error",
+        error: error.message,
+        status: false,
+      });
+    }
+  } else {
+    response.statusCode = 405;
+    response.body = JSON.stringify({
+      message: "Method Not Allowed",
+      status: false,
+    });
+  }
+};
