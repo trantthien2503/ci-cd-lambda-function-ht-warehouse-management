@@ -67,13 +67,14 @@ export const handleUnits = async (
       if (id_product && ratio && unit) {
         let command = new QueryCommand({
           TableName: tableName,
-          FilterExpression:
+          KeyConditionExpression:
             "ratio = :ratio AND unit = :unit AND id_product = :id_product",
           ExpressionAttributeValues: {
             ":ratio": ratio,
             ":unit": unit,
             ":id_product": id_product,
           },
+          ConsistentRead: true,
         });
         const dataQueryCommand = await docClient.send(command);
         if (dataQueryCommand.Items.length > 0) {
