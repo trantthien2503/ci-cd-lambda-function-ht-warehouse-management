@@ -4,6 +4,7 @@ import {
   PutCommand,
   DeleteCommand,
   UpdateCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 export const handleUnits = async (
