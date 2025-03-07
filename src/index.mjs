@@ -15,7 +15,7 @@ import {
 } from "./handle/suppliers.mjs";
 import { handleBills, handleBillSuppliers } from "./handle/bills.mjs";
 import { handleUnits, handleGetUnitsByIdProduct } from "./handle/units.mjs";
-import { handleStocks } from "./handle/stocks.mjs";
+import { handleStocks, handleGetStockByField } from "./handle/stocks.mjs";
 
 const tableGlobal = "__hoangthien-warehouse-management";
 
@@ -38,6 +38,7 @@ export const handler = async function (event, context, callback) {
       "/units": handleUnits,
       "/units/get-units-by-id-product": handleGetUnitsByIdProduct,
       "/stocks": handleStocks,
+      "/stocks/get-stock-by-field": handleGetStockByField,
       "/products": handleProducts,
       "/products/add-multiple": handleAddMultipleProducts,
       "/products/get-paginations": handleGetProductsPaginations,

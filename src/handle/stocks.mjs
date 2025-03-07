@@ -210,3 +210,54 @@ export const handleStocks = async (
     });
   }
 };
+
+export const handleGetStockByField = async (
+  method,
+  event,
+  response,
+  docClient,
+  tableGlobal,
+  callback
+) => {
+  const tableName = `stocks${tableGlobal}`;
+
+  if (method === "POST") {
+    try {
+      // Parse the request body
+      const requestBody = JSON.parse(event.body);
+      const { id_product } = requestBody;
+      let command = new ScanCommand({
+        TableName: tableName,
+        FilterExpression: "id_product = :id_product",
+        ExpressionAttributeValues: {
+          ":id_product": id_product,
+        },
+        ConsistentRead: true,
+      });
+
+      const dataQueryCommand = await docClient.send(command);
+
+      // Set success response
+      response.body = JSON.stringify({
+        status: true,
+        data: dataQueryCommand.Items,
+      });
+    } catch (error) {
+      console.error("Error:", error);
+
+      // Set error response
+      response.statusCode = 500;
+      response.body = JSON.stringify({
+        message: "Internal server error",
+        error: error.message, // Trả về thông báo lỗi chi tiết
+        status: false,
+      });
+    }
+  } else {
+    response.statusCode = 405;
+    response.body = JSON.stringify({
+      message: "Method Not Allowed",
+      status: false,
+    });
+  }
+};
