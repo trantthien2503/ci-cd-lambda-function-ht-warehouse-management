@@ -225,12 +225,13 @@ export const handleGetStockByField = async (
     try {
       // Parse the request body
       const requestBody = JSON.parse(event.body);
-      const { id_product } = requestBody;
+      const { id_product, id_unit } = requestBody;
       let command = new ScanCommand({
         TableName: tableName,
-        FilterExpression: "id_product = :id_product",
+        FilterExpression: "id_product = :id_product AND id_unit = :id_unit",
         ExpressionAttributeValues: {
           ":id_product": id_product,
+          ":id_unit": id_unit,
         },
         ConsistentRead: true,
       });
